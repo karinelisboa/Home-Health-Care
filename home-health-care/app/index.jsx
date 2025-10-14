@@ -24,7 +24,9 @@ export default function PaginaInicial() {
           <Text style={styles.textoBotaoLogin}>Faça login</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.botaoCriarConta}>
+        <TouchableOpacity style={styles.botaoCriarConta}
+        onPress={() => router.push("/auth/cadastro")}
+        >
           <Text style={styles.textoBotaoCriarConta}>Crie sua conta</Text>
         </TouchableOpacity>
       </View>
