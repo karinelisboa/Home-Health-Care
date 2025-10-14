@@ -1,7 +1,10 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { useRouter } from "expo-router";
+
 
 export default function PaginaInicial() {
+  const router = useRouter();
   return (
     <View style={styles.container}>
       <Text style={styles.titulo}>Login</Text>
@@ -15,7 +18,9 @@ export default function PaginaInicial() {
       </View>
 
       <View style={styles.botoesContainer}>
-        <TouchableOpacity style={styles.botaoLogin}>
+        <TouchableOpacity style={styles.botaoLogin}
+        onPress={() => router.push("/auth/login")}
+        >
           <Text style={styles.textoBotaoLogin}>Faça login</Text>
         </TouchableOpacity>
 
