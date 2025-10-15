@@ -51,7 +51,10 @@ export default function CadastroScreen() {
             <View style={styles.inner}>
               {/* Header */}
               <View style={styles.header}>
-                <TouchableOpacity style={styles.backButton}>
+                <TouchableOpacity 
+                style={[styles.backButton, { paddingLeft: 20 }]}
+                onPress={() => router.back()}
+                >
                     <Ionicons name="arrow-back" size={24} color="black" />
                 </TouchableOpacity>
                 <Text style={styles.titulo}>Cadastro</Text>
@@ -143,15 +146,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 35,
-    marginTop: 30,
-    fontSize: 20,
+    marginTop: 55,
   },
   titulo: {
     fontSize: 20,
     textAlign: 'center',
   },
   backButton: {
-    marginRight: 10,
+    marginRight: -20,
     alignItems: 'flex-start',
   },
   content: {
@@ -160,8 +162,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
     paddingHorizontal: 10,
-    paddingTop: 50,
+    paddingTop: 20,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: -3, height: -3 }, // aqui controla direção da sombra
@@ -181,7 +185,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    marginBottom: 6,
+    marginBottom: 30,
   },
   botaoWrapper: {
     paddingTop: 50,
