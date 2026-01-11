@@ -1,19 +1,21 @@
-import React, { useState } from "react";
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
-  View,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
   TouchableWithoutFeedback,
-  Keyboard,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { Ionicons } from '@expo/vector-icons';
+
+import { CardAutenticacao } from '../../components/CardAutenticacao';
 
 export default function CadastroScreen() {
   const router = useRouter();
@@ -29,175 +31,249 @@ export default function CadastroScreen() {
   const handleChange = (key, value) => setForm((s) => ({ ...s, [key]: value }));
 
   const handleSubmit = () => {
-    console.log("Enviar:", form);
-    // fazer requisição de cadastro aqui
-  };
+
+      console.log("Enviar:", form);
+
+      router.replace('/'); 
+    };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <View style={styles.mainContainer}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       >
-        {/* Fecha teclado ao tocar fora */}
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          {/* ScrollView com contentContainerStyle de flexGrow para ocupar a tela inteira */}
           <ScrollView
             contentContainerStyle={styles.scrollContainer}
             showsVerticalScrollIndicator={false}
           >
-            {/* Conteúdo principal organizado com espaço entre para empurrar o botão para o fim */}
-            <View style={styles.inner}>
-              {/* Header */}
-              <View style={styles.header}>
-                <TouchableOpacity style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="black" />
-                </TouchableOpacity>
-                <Text style={styles.titulo}>Cadastro</Text>
-                <View style={{ width: 24 }} /> {/* espaço para alinhar */}
-              </View>
+            
+            <View style={styles.headerContainer}>
+              <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                <Ionicons name="arrow-back" size={28} color="#00897B" />
+              </TouchableOpacity>
 
-              {/* Form (campos) */}
-              <View style={styles.content}>
-                <Text style={styles.label}>Nome completo</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Nome do Médico"
-                  value={form.nome}
-                  onChangeText={(t) => handleChange("nome", t)}
+              <View style={styles.logoArea}>
+                <Image 
+                  source={require('../../assets/images/logo.png')}
+                  style={styles.logo}
+                  resizeMode="contain"
                 />
-
-                <Text style={styles.label}>CRM</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="000.000.000-00"
-                  value={form.crm}
-                  onChangeText={(t) => handleChange("crm", t)}
-                />
-
-                <Text style={styles.label}>Data de nascimento</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="00/00/0000"
-                  value={form.nascimento}
-                  onChangeText={(t) => handleChange("nascimento", t)}
-                />
-
-                <Text style={styles.label}>CPF</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="000.000.000-00"
-                  value={form.cpf}
-                  onChangeText={(t) => handleChange("cpf", t)}
-                />
-
-                <Text style={styles.label}>E-mail</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="email@email.com"
-                  keyboardType="email-address"
-                  value={form.email}
-                  onChangeText={(t) => handleChange("email", t)}
-                />
-
-                <Text style={styles.label}>Senha</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="senha12345"
-                  secureTextEntry
-                  value={form.senha}
-                  onChangeText={(t) => handleChange("senha", t)}
-                />
-              </View>
-
-              {/* Espaçador flexível para empurrar o botão até o final do scroll */}
-              <View style={{ flex: 1 }} />
-
-              {/* Botão NO FINAL do conteúdo rolável */}
-              <View style={styles.botaoWrapper}>
-                <TouchableOpacity style={styles.botao} onPress={handleSubmit}>
-                  <Text style={styles.botaoTexto}>Confirmar</Text>
-                </TouchableOpacity>
+                <Text style={styles.appName}>HomeHeart ECG</Text>
+                <Text style={styles.subtitle}>Crie sua conta</Text>
               </View>
             </View>
+
+            <CardAutenticacao style={{ paddingBottom: 60, minHeight: 'auto' }}>
+              
+              <View style={styles.formContent}>
+                
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Nome completo</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Nome do Médico"
+                    value={form.nome}
+                    onChangeText={(t) => handleChange("nome", t)}
+                    placeholderTextColor="#aaa"
+                  />
+                </View>
+
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>CRM</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="000.000.000-00"
+                    value={form.crm}
+                    onChangeText={(t) => handleChange("crm", t)}
+                    placeholderTextColor="#aaa"
+                  />
+                </View>
+
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Data de nascimento</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="00/00/0000"
+                    value={form.nascimento}
+                    onChangeText={(t) => handleChange("nascimento", t)}
+                    placeholderTextColor="#aaa"
+                    keyboardType="numeric"
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>CPF</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="000.000.000-00"
+                    value={form.cpf}
+                    onChangeText={(t) => handleChange("cpf", t)}
+                    placeholderTextColor="#aaa"
+                    keyboardType="numeric"
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>E-mail</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="email@email.com"
+                    keyboardType="email-address"
+                    value={form.email}
+                    onChangeText={(t) => handleChange("email", t)}
+                    placeholderTextColor="#aaa"
+                    autoCapitalize="none"
+                  />
+                </View>
+
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Senha</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="senha12345"
+                    secureTextEntry
+                    value={form.senha}
+                    onChangeText={(t) => handleChange("senha", t)}
+                    placeholderTextColor="#aaa"
+                  />
+                </View>
+
+
+                <View style={styles.botaoWrapper}>
+                  <TouchableOpacity style={styles.botao} onPress={handleSubmit}>
+                    <Text style={styles.botaoTexto}>Confirmar</Text>
+                  </TouchableOpacity>
+                </View>
+
+              </View>
+            </CardAutenticacao>
+
           </ScrollView>
         </TouchableWithoutFeedback>
+        <View style={styles.floatingWarning} pointerEvents="none">
+          <Text style={styles.warningText}>Role para confirmar</Text>
+          <Ionicons name="chevron-down" size={16} color="#999" />
+        </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" },
+  mainContainer: {
+    flex: 1,
+    backgroundColor: "#F5F7FA",
+  },
   scrollContainer: {
     flexGrow: 1,
-    padding: 2,
-  },
-  inner: {
-    flex: 1,
-    minHeight: 700,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 35,
-    marginTop: 30,
-    fontSize: 20,
-  },
-  titulo: {
-    fontSize: 20,
-    textAlign: 'center',
-  },
-  backButton: {
-    marginRight: 10,
-    alignItems: 'flex-start',
-  },
-  content: {
-    flex: 1,
-    backgroundColor: '#fff',
-    marginTop: 10,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    paddingHorizontal: 10,
-    paddingTop: 50,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: -3, height: -3 }, // aqui controla direção da sombra
-    shadowRadius: 6,
-    elevation: 8,
+    paddingBottom: 40,
   },
 
+  headerContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 60,
+    paddingBottom: 30,
+    position: 'relative',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    zIndex: 10,
+    padding: 8,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  logoArea: {
+    alignItems: 'center',
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: 5,
+  },
+  appName: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#00897B',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 2,
+    fontWeight: '400',
+  },
+
+  formContent: {
+    width: '100%',
+  },
+  inputGroup: {
+    marginBottom: 15,
+  },
   label: {
-    fontSize: 18,
-    color: "#333",
-    marginBottom: 20,
-    marginTop: 20,
+    fontSize: 16,
+    color: "#444",
+    marginBottom: 8,
+    fontWeight: "600",
+    paddingLeft: 10,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 24,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    marginBottom: 6,
+    width: '100%',
+    height: 55,
+    borderWidth: 1.5,
+    borderColor: "#E0E0E0",
+    backgroundColor: "#FAFAFA",
+    borderRadius: 30,
+    paddingHorizontal: 20,
+    fontSize: 16,
+    color: "#333",
   },
+  
   botaoWrapper: {
-    paddingTop: 50,
-    paddingBottom: Platform.OS === "ios" ? 30 : 20,
+    marginTop: 30,
+    alignItems: 'center',
+  },
+  floatingWarning: {
+    position: 'absolute',
+    bottom: 10,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: 0.8,
+    zIndex: 10,
+    paddingBottom: 5,
+  },
+  warningText: {
+    color: '#999',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: -2,
   },
   botao: {
-    backgroundColor: "#0586d6",
-    paddingVertical: 20,
-    borderRadius: 26,
+    backgroundColor: "#00897B",
+    paddingVertical: 18,
+    borderRadius: 30,
     alignItems: "center",
-    width: '85%',
-    alignSelf: 'center',
+    width: '100%',
+    elevation: 4,
+    shadowColor: '#00897B',
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 4 },
   },
   botaoTexto: {
     color: "#fff",
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: "bold",
   },
 });

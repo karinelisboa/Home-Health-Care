@@ -1,35 +1,45 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { useRouter } from "expo-router";
+import React from 'react';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+import { CardAutenticacao } from '../components/CardAutenticacao';
 
 
 export default function PaginaInicial() {
   const router = useRouter();
+  
   return (
     <View style={styles.container}>
-      <Text style={styles.titulo}>Login</Text>
-
-      <View style={styles.logoContainer}>
+      
+      <View style={styles.topContent}>
         <Image
-          source={require('../assets/images/heartblue.png')}
+          source={require('../assets/images/logo.png')} 
           style={styles.logo}
           resizeMode="contain"
         />
+        <Text style={styles.appName}>Home Health Care</Text>
+        <Text style={styles.tagline}>Saúde em casa, conectada.</Text>
       </View>
+      <CardAutenticacao>
+        
+        <View style={{ marginBottom: 10 }} />
 
-      <View style={styles.botoesContainer}>
-        <TouchableOpacity style={styles.botaoLogin}
-        onPress={() => router.push("/auth/login")}
+        <TouchableOpacity 
+          style={styles.botaoLogin}
+          onPress={() => router.push("/auth/login")}
         >
           <Text style={styles.textoBotaoLogin}>Faça login</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.botaoCriarConta}
-        onPress={() => router.push("/auth/cadastro")}
+        <TouchableOpacity 
+          style={styles.botaoCriarConta}
+          onPress={() => router.push("/auth/cadastro")}
         >
           <Text style={styles.textoBotaoCriarConta}>Crie sua conta</Text>
         </TouchableOpacity>
-      </View>
+
+      </CardAutenticacao>
+      
     </View>
   );
 }
@@ -37,61 +47,59 @@ export default function PaginaInicial() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 60,
+    backgroundColor: '#F5F7FA',
+    justifyContent: 'flex-end',
   },
-  titulo: {
-    fontSize: 18,
-    fontWeight: '500',
-    marginTop: 20,
-  },
-  logoContainer: {
+  topContent: {
     flex: 1,
+    alignItems: 'center',
     justifyContent: 'center',
+    paddingBottom: 20, 
   },
   logo: {
-    width: 90,
-    height: 90,
-    tintColor: '#007BDF',
+    width: 180, 
+    height: 180,
+    marginBottom: 15,
   },
-  botoesContainer: {
-    width: '100%',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingTop: 50,
-    paddingBottom: 20,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: -3 },
+  appName: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#00897B',
+    marginBottom: 5,
   },
+  tagline: {
+    fontSize: 16,
+    color: '#555',
+    fontWeight: '400',
+  },
+
   botaoLogin: {
-    backgroundColor: '#007BDF',
-    width: '85%',
-    paddingVertical: 26,
-    borderRadius: 20,
+    backgroundColor: '#00897B',
+    width: '100%',
+    paddingVertical: 18,
+    borderRadius: 30,
     alignItems: 'center',
-    marginBottom: 25,
+    marginTop: 20,
+    marginBottom: 40,
+    elevation: 2,
   },
   textoBotaoLogin: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   botaoCriarConta: {
-    backgroundColor: '#B5D6E5',
-    width: '85%',
-    paddingVertical: 26,
-    borderRadius: 20,
+    backgroundColor: 'transparent',
+    width: '100%',
+    paddingVertical: 18,
+    borderRadius: 30,
     alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#00897B',
   },
   textoBotaoCriarConta: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#00897B',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });

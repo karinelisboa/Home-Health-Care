@@ -1,51 +1,65 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
+import { CardAutenticacao } from '../../components/CardAutenticacao';
 
 export default function LoginScreen() {
   const router = useRouter();
 
   return (
     <View style={styles.container}>
-      {/* Header com título */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="black" />
+      
+      <View style={styles.headerContainer}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.replace('/')}>
+          <Ionicons name="arrow-back" size={28} color="#00897B" />
         </TouchableOpacity>
 
-        <View style={styles.centerContainer}>
-          <Text style={styles.titulo}>Login</Text>
+        <View style={styles.logoArea}>
+          <Image 
+            source={require('../../assets/images/logo.png')} 
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.appName}>HomeHeart ECG</Text>
+          <Text style={styles.loginSubtitle}>Faça login para continuar</Text>
         </View>
-        <View style={{ width: 24}} />
       </View>
 
-      {/* Área sombreada com inputs e botão */}
-      <View style={styles.content}>
-        <Text style={styles.label}>E-mail</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="email@email.com"
-          keyboardType="email-address"
-          placeholderTextColor="#aaa"
-        />
+      <CardAutenticacao style={{ minHeight: '60%' }}>
+        
+        <Text style={styles.cardTitle}>Bem-vindo de volta!</Text>
 
-        <Text style={styles.label}>Senha</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="senha12345"
-          secureTextEntry
-          placeholderTextColor="#aaa"
-        />
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>E-mail</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="email@exemplo.com"
+            keyboardType="email-address"
+            placeholderTextColor="#aaa"
+            autoCapitalize="none"
+          />
+        </View>
 
-        <TouchableOpacity>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Senha</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="********"
+            secureTextEntry
+            placeholderTextColor="#aaa"
+          />
+        </View>
+
+        <TouchableOpacity style={styles.forgotPassword}>
           <Text style={styles.link}>Esqueci a minha senha</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.botaoEntrar} onPress={() => router.push('/(tabs)')}>
           <Text style={styles.textoBotao}>Entrar</Text>
         </TouchableOpacity>
-      </View>
+
+      </CardAutenticacao>
     </View>
   );
 }
@@ -53,81 +67,103 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F5F7FA',
+    justifyContent: 'flex-end',
   },
-
-  header: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  paddingTop: 60,
-  paddingBottom: 10,
-  paddingHorizontal: 20,
-  },
-  centerContainer: {
+  headerContainer: {
     flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+    paddingBottom: 20,
+    position: 'relative',
   },
   backButton: {
-    marginRight: 10,
-    alignItems: 'flex-start',
-  },
-  titulo: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#000',
-  },
-
-  content: {
-    flex: 1,
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10,
+    padding: 8,
     backgroundColor: '#fff',
-    marginTop: 10,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    paddingHorizontal: 30,
-    paddingTop: 120,
+    borderRadius: 20,
+    elevation: 3,
     shadowColor: '#000',
     shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: -3 },
-    shadowRadius: 6,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 2 },
   },
-
+  logoArea: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 5, 
+  },
+  appName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#00897B',
+  },
+  loginSubtitle: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 12,
+    fontWeight: '400',
+  },
+  cardTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 30,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+  },
+  inputContainer: {
+    width: '100%',
+    marginBottom: 40,
+  },
   label: {
-    fontSize: 18,
-    marginBottom: 15,
-    color: '#000',
-    fontWeight: '500',
+    fontSize: 16,
+    marginBottom: 8,
+    color: '#444',
+    fontWeight: '600',
+    paddingLeft: 10,
   },
   input: {
     width: '100%',
-    borderWidth: 1,
-    borderColor: '#dcdcdc',
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    paddingVertical: 14,
+    height: 55,
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+    backgroundColor: '#FAFAFA',
+    borderRadius: 30,
+    paddingHorizontal: 20,
+    fontSize: 16,
+    color: '#333',
+  },
+  forgotPassword: {
+    alignSelf: 'center', 
     marginBottom: 30,
-    fontSize: 15,
+    marginTop: -5,
   },
   link: {
-    textAlign: 'center',
     fontSize: 14,
-    color: '#555',
-    marginTop: -2,
+    color: '#00897B',
+    fontWeight: '600',
   },
   botaoEntrar: {
-    backgroundColor: '#007BDF',
-    width: '85%',
-    paddingVertical: 25,
-    borderRadius: 14,
+    backgroundColor: '#00897B',
+    width: '100%',
+    paddingVertical: 18,
+    borderRadius: 30,
     alignItems: 'center',
-    position: 'absolute',
-    bottom: 70,
-    alignSelf: 'center',
+    elevation: 4,
+    shadowColor: '#00897B',
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 4 },
   },
   textoBotao: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
