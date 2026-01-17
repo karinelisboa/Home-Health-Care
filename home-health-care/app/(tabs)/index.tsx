@@ -1,75 +1,184 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import Footer from '../../components/Footer';
+import AlertCard from '../../components/AlertCard';
+import PatientDetailModal from '../../components/PatientDetail';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+interface Alert {
+  date: string;
+  time: string;
+  classification: string;
+  bpm: number;
+  patient: string;
+  showIcon: boolean;
+}
 
-export default function HomeScreen() {
+export default function Home() {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
+
+  const alerts: Alert[] = [
+    {
+      date: "09/07/2025",
+      time: "13:44",
+      classification: "Sem classificação",
+      bpm: 56,
+      patient: "Karine Lisboa",
+      showIcon: false
+    },
+    {
+      date: "09/07/2025",
+      time: "13:44",
+      classification: "Sem classificação",
+      bpm: 57,
+      patient: "Raphael",
+      showIcon: true
+    },
+    {
+      date: "09/07/2025",
+      time: "13:44",
+      classification: "Sem classificação",
+      bpm: 58,
+      patient: "Maria Silva",
+      showIcon: false
+    },
+    {
+      date: "09/07/2025",
+      time: "14:12",
+      classification: "Sem classificação",
+      bpm: 62,
+      patient: "João Pedro",
+      showIcon: false
+    },
+    {
+      date: "09/07/2025",
+      time: "14:30",
+      classification: "Sem classificação",
+      bpm: 71,
+      patient: "Ana Paula",
+      showIcon: true
+    },
+    {
+      date: "09/07/2025",
+      time: "15:05",
+      classification: "Sem classificação",
+      bpm: 65,
+      patient: "Carlos Eduardo",
+      showIcon: false
+    }
+  ];
+
+  const handleAlertPress = (alert: Alert) => {
+    setSelectedAlert(alert);
+    setModalVisible(true);
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <View style={styles.container}>
+      {/* Header - Fixo */}
+      <View style={styles.header}>
+        <Text style={styles.appTitle}>HomeHeart ECG</Text>
+      </View>
+
+      {/* Conteúdo fixo - não rola */}
+      <View style={styles.content}>
+        <Text style={styles.greeting}>Bom dia, Gustavo</Text>
+        <Text style={styles.subtitle}>
+          Monitore os alertas sobre os sinais coletados dos pacientes
+        </Text>
+
+        <Text style={styles.sectionTitle}>Seus últimos alertas</Text>
+        <Text style={styles.sectionSubtitle}>
+          Monitore os alertas sobre os sinais coletados dos pacientes
+        </Text>
+      </View>
+
+      {/* Lista de Alertas - Apenas esta parte rola */}
+      <ScrollView 
+        style={styles.alertsScrollView}
+        contentContainerStyle={styles.alertsScrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {alerts.map((alert, index) => (
+          <AlertCard
+            key={index}
+            date={alert.date}
+            time={alert.time}
+            classification={alert.classification}
+            bpm={alert.bpm}
+            patient={alert.patient}
+            showIcon={alert.showIcon}
+            onPress={() => handleAlertPress(alert)}
+          />
+        ))}
+      </ScrollView>
+
+      {/* Footer - Fixo */}
+      <Footer />
+
+      {/* Modal de Detalhes */}
+      {selectedAlert && (
+        <PatientDetailModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          patient={selectedAlert.patient}
+          date={selectedAlert.date}
+          time={selectedAlert.time}
+          bpm={selectedAlert.bpm}
+          classification={selectedAlert.classification}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    backgroundColor: '#E0F2F1',
   },
-  stepContainer: {
-    gap: 8,
+  header: {
+    alignItems: 'center',
+    paddingTop: 32,
+    paddingBottom: 24,
+    backgroundColor: '#E0F2F1',
+  },
+  appTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#00897B',
+  },
+  content: {
+    paddingHorizontal: 20,
+    backgroundColor: '#E0F2F1',
+  },
+  greeting: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#00897B',
+    marginBottom: 8,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 16,
+  },
+  alertsScrollView: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  alertsScrollContent: {
+    paddingBottom: 20,
   },
 });
