@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Dimensions, Lin
 import { Ionicons } from '@expo/vector-icons';
 import { ScrollView } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import PatientHistoryModal from './PatientHistoryModal.tsx';
+import PatientHistoryModal from './PatientHistoryModal';
 
 interface PatientDetailModalProps {
   visible: boolean;

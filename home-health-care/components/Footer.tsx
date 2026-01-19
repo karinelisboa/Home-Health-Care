@@ -1,32 +1,41 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  activeTab?: 'home' | 'session' | 'stats' | 'profile';
+}
+
+const Footer: React.FC<FooterProps> = ({ activeTab = 'home' }) => {
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.item}>
-        <Ionicons name="home" size={28} color="#00897B" />
-        <Text style={styles.textActive}>Início</Text>
+      <TouchableOpacity style={styles.item} onPress={() => router.push('/')}>
+        <Ionicons name="home" size={28} color={activeTab === 'home' ? '#00897B' : '#999'} />
+        <Text style={activeTab === 'home' ? styles.textActive : styles.textInactive}>Início</Text>
       </TouchableOpacity>
-      
-      <TouchableOpacity style={styles.item}>
-        <Ionicons name="swap-horizontal" size={28} color="#999" />
-        <Text style={styles.textInactive}>Sessão</Text>
+
+      <TouchableOpacity style={styles.item} onPress={() => router.push('/(tabs)/session')}>
+        <Ionicons name="swap-horizontal" size={28} color={activeTab === 'session' ? '#00897B' : '#999'} />
+        <Text style={activeTab === 'session' ? styles.textActive : styles.textInactive}>Sessão</Text>
       </TouchableOpacity>
-      
-      <TouchableOpacity style={styles.item}>
-        <Ionicons name="stats-chart" size={28} color="#999" />
-        <Text style={styles.textInactive}>Estatísticas</Text>
+
+      <TouchableOpacity style={styles.item} onPress={() => router.push('/(tabs)/stats')}>
+        <Ionicons name="stats-chart" size={28} color={activeTab === 'stats' ? '#00897B' : '#999'} />
+        <Text style={activeTab === 'stats' ? styles.textActive : styles.textInactive}>Estatísticas</Text>
       </TouchableOpacity>
-      
-      <TouchableOpacity style={styles.item}>
-        <Ionicons name="person" size={28} color="#999" />
-        <Text style={styles.textInactive}>Perfil</Text>
+
+      <TouchableOpacity style={styles.item} onPress={() => router.push('/(tabs)/profile')}>
+        <Ionicons name="person" size={28} color={activeTab === 'profile' ? '#00897B' : '#999'} />
+        <Text style={activeTab === 'profile' ? styles.textActive : styles.textInactive}>Perfil</Text>
       </TouchableOpacity>
     </View>
   );
 };
+
+// ... (mantenha os estilos iguais)
 
 const styles = StyleSheet.create({
   container: {
