@@ -1,8 +1,19 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Dimensions, Linking, Alert } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
-import { ScrollView } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
+import React, { useEffect, useState } from 'react';
+import {
+  Alert,
+  Dimensions,
+  Linking,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { LineChart } from 'react-native-chart-kit';
 import PatientHistoryModal from './PatientHistoryModal';
 
 interface PatientDetailModalProps {
@@ -28,34 +39,82 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
 }) => {
   const [contactModalVisible, setContactModalVisible] = useState(false);
   const [historyModalVisible, setHistoryModalVisible] = useState(false);
-  
-  // Dados de exemplo - você pode passar isso via props depois
-  const phoneNumber = '(21) 989186684';
-  const address = 'Rua Exemplo, Flamengo - RJ';
-  const patientAge = 57;
+  const [ecgData, setEcgData] = useState<number[]>([]);
 
-  // Histórico de exames mockado
-  const examHistory = [
-    { id: 1, date: '09/08/2025', time: '13:44', type: 'Eletrocardiograma', classification: 'Sem classificação', bpm: 57 },
-    { id: 2, date: '02/08/2025', time: '13:44', type: 'Eletrocardiograma', classification: 'Sem classificação', bpm: 57 },
-    { id: 3, date: '28/07/2025', time: '13:44', type: 'Eletrocardiograma', classification: 'Sem classificação', bpm: 57 },
-    { id: 4, date: '15/07/2025', time: '10:30', type: 'Eletrocardiograma', classification: 'Normal', bpm: 62 },
-    { id: 5, date: '01/07/2025', time: '14:15', type: 'Eletrocardiograma', classification: 'Sem classificação', bpm: 59 },
-  ];
+  const [detalhesApi, setDetalhesApi] = useState({
+    phone: 'Carregando...',
+    address: 'Carregando...',
+    age: 0,
+    history: [] as any[],
+  });
+
+  useEffect(() => {
+    const buscarDetalhesNaApi = async () => {
+      try {
+        const resposta = await fetch(
+          `http://localhost:3000/paciente/detalhes?nome=${patient}`
+        );
+
+        if (resposta.ok) {
+          const dados = await resposta.json();
+          setDetalhesApi(dados);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar detalhes:', error);
+      }
+    };
+
+    if (visible && patient) {
+      buscarDetalhesNaApi();
+    }
+  }, [visible, patient]);
+
+  useEffect(() => {
+    const buscarEcg = async () => {
+      try {
+        const resposta = await fetch(
+          'http://localhost:3000/get/ecg?id=1&crm=12345'
+        );
+
+        const dados = await resposta.json();
+
+        console.log(
+          'Quantidade de pontos ECG:',
+          dados.dados_onda_ecg?.length
+        );
+
+        setEcgData(
+          dados.dados_onda_ecg?.slice(0, 500) || []
+        );
+      } catch (erro) {
+        console.error('Erro ao buscar ECG:', erro);
+      }
+    };
+
+    if (visible) {
+      buscarEcg();
+    }
+  }, [visible]);
 
   const handleCall = () => {
-    const phone = phoneNumber.replace(/\D/g, '');
-    Linking.openURL(`tel:${phone}`);
+    const phoneLimpo = detalhesApi.phone.replace(/\D/g, '');
+    Linking.openURL(`tel:${phoneLimpo}`);
   };
 
   const handleCopyPhone = async () => {
-    await Clipboard.setStringAsync(phoneNumber);
-    Alert.alert('Copiado!', 'Telefone copiado para a área de transferência');
+    await Clipboard.setStringAsync(detalhesApi.phone);
+    Alert.alert(
+      'Copiado!',
+      'Telefone copiado para a área de transferência'
+    );
   };
 
   const handleCopyAddress = async () => {
-    await Clipboard.setStringAsync(address);
-    Alert.alert('Copiado!', 'Endereço copiado para a área de transferência');
+    await Clipboard.setStringAsync(detalhesApi.address);
+    Alert.alert(
+      'Copiado!',
+      'Endereço copiado para a área de transferência'
+    );
   };
 
   return (
@@ -66,89 +125,135 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.container}>
-        {/* Header compacto */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#333" />
+          <TouchableOpacity
+            onPress={onClose}
+            style={styles.backButton}
+          >
+            <Ionicons
+              name="arrow-back"
+              size={24}
+              color="#333"
+            />
           </TouchableOpacity>
+
           <View style={styles.headerInfo}>
-            <Text style={styles.patientName}>{patient}</Text>
-            <Text style={styles.headerSubtitle}>{date} às {time}</Text>
+            <Text style={styles.patientName}>
+              {patient}
+            </Text>
+            <Text style={styles.headerSubtitle}>
+              {date} às {time}
+            </Text>
           </View>
+
           <TouchableOpacity style={styles.moreButton}>
-            <Ionicons name="ellipsis-horizontal" size={24} color="#333" />
+            <Ionicons
+              name="ellipsis-horizontal"
+              size={24}
+              color="#333"
+            />
           </TouchableOpacity>
         </View>
 
-        {/* Informações rápidas */}
         <View style={styles.quickInfo}>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>BPM</Text>
             <Text style={styles.infoBpm}>{bpm}</Text>
           </View>
+
           <View style={styles.divider} />
+
           <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Classificação</Text>
-            <Text style={styles.infoValue}>{classification}</Text>
+            <Text style={styles.infoLabel}>
+              Classificação
+            </Text>
+            <Text style={styles.infoValue}>
+              {classification}
+            </Text>
           </View>
+
           <View style={styles.divider} />
+
           <View style={styles.infoItem}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.iconButton}
-              onPress={() => setContactModalVisible(true)}
+              onPress={() =>
+                setContactModalVisible(true)
+              }
             >
-              <Ionicons name="call-outline" size={20} color="#00897B" />
+              <Ionicons
+                name="call-outline"
+                size={20}
+                color="#00897B"
+              />
             </TouchableOpacity>
-            <Text style={styles.iconLabel}>Contato</Text>
+
+            <Text style={styles.iconLabel}>
+              Contato
+            </Text>
           </View>
+
           <View style={styles.infoItem}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.iconButton}
-              onPress={() => setHistoryModalVisible(true)}
+              onPress={() =>
+                setHistoryModalVisible(true)
+              }
             >
-              <Ionicons name="time-outline" size={20} color="#00897B" />
+              <Ionicons
+                name="time-outline"
+                size={20}
+                color="#00897B"
+              />
             </TouchableOpacity>
-            <Text style={styles.iconLabel}>Histórico</Text>
+
+            <Text style={styles.iconLabel}>
+              Histórico
+            </Text>
           </View>
         </View>
 
-        {/* ECG SCROLLÁVEL HORIZONTAL - OCUPA TODA A TELA */}
         <View style={styles.ecgSection}>
-          <ScrollView 
+          <ScrollView
             horizontal
             showsHorizontalScrollIndicator={true}
             style={styles.ecgScrollView}
-            contentContainerStyle={styles.ecgScrollContent}
+            contentContainerStyle={
+              styles.ecgScrollContent
+            }
           >
-            <Image 
-              source={require('../assets/images/norm.png')} 
-              style={styles.ecgImage}
-              resizeMode="contain"
+            <LineChart
+              data={{
+                datasets: [
+                  {
+                    data:
+                      ecgData.length > 0
+                        ? ecgData
+                        : [0],
+                  },
+                ],
+              }}
+              width={1500}
+              height={300}
+              withDots={false}
+              withInnerLines={false}
+              withOuterLines={false}
+              withVerticalLabels={false}
+              withHorizontalLabels={false}
+              chartConfig={{
+                backgroundColor: '#fff',
+                backgroundGradientFrom: '#fff',
+                backgroundGradientTo: '#fff',
+                decimalPlaces: 0,
+                color: () => '#00897B',
+              }}
             />
           </ScrollView>
-          <Text style={styles.ecgHint}>← Arraste para visualizar →</Text>
-        </View>
 
-        {/* Footer */}
-        <View style={styles.footer}>
-          <TouchableOpacity style={styles.footerItem}>
-            <Ionicons name="home" size={24} color="#00897B" />
-            <Text style={styles.footerTextActive}>Início</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.footerItem}>
-            <Ionicons name="swap-horizontal" size={24} color="#999" />
-            <Text style={styles.footerText}>Sessão</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.footerItem}>
-            <Ionicons name="stats-chart" size={24} color="#999" />
-            <Text style={styles.footerText}>Estatísticas</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.footerItem}>
-            <Ionicons name="person" size={24} color="#999" />
-            <Text style={styles.footerText}>Perfil</Text>
-          </TouchableOpacity>
+          <Text style={styles.ecgHint}>
+            ← Arraste para visualizar →
+          </Text>
         </View>
-      </View>
 
       {/* Modal de Contato */}
       <Modal
@@ -159,7 +264,6 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
       >
         <View style={styles.modalOverlay}>
           <View style={styles.contactModal}>
-            {/* Header do Modal */}
             <View style={styles.contactHeader}>
               <TouchableOpacity 
                 onPress={() => setContactModalVisible(false)}
@@ -167,17 +271,15 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
               >
                 <Ionicons name="arrow-back" size={24} color="#333" />
               </TouchableOpacity>
-              <Text style={styles.contactTitle}>Contato</Text>
+              <Text style={styles.contactTitle}>Contato de {patient}</Text>
               <View style={{ width: 24 }} />
             </View>
 
-            {/* Conteúdo do Modal */}
             <View style={styles.contactContent}>
-              {/* Telefone */}
               <View style={styles.contactItem}>
                 <View style={styles.contactInfo}>
                   <Ionicons name="call" size={22} color="#00897B" />
-                  <Text style={styles.contactText}>{phoneNumber}</Text>
+                  <Text style={styles.contactText}>{detalhesApi.phone}</Text>
                 </View>
                 <TouchableOpacity 
                   style={styles.copyButton}
@@ -188,11 +290,10 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                 </TouchableOpacity>
               </View>
 
-              {/* Endereço */}
               <View style={styles.contactItem}>
                 <View style={styles.contactInfo}>
                   <Ionicons name="location" size={22} color="#00897B" />
-                  <Text style={styles.contactText}>{address}</Text>
+                  <Text style={styles.contactText}>{detalhesApi.address}</Text>
                 </View>
                 <TouchableOpacity 
                   style={styles.copyButton}
@@ -203,7 +304,6 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                 </TouchableOpacity>
               </View>
 
-              {/* Botão de Ligar */}
               <TouchableOpacity 
                 style={styles.callButton}
                 onPress={handleCall}
@@ -221,14 +321,16 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
         visible={historyModalVisible}
         onClose={() => setHistoryModalVisible(false)}
         patient={patient}
-        age={patientAge}
+        age={detalhesApi.age}
         currentClassification={classification}
         currentBpm={bpm}
-        onExamPress={(exam) => {
+        /* AQUI ESTÁ A MÁGICA: Repassamos o histórico da API para o modal filho */
+        examHistory={detalhesApi.history} 
+        onExamPress={(exam: any) => {
           console.log('Exame selecionado:', exam);
-          // Aqui você pode abrir o detalhe do exame específico
         }}
       />
+      </View>
     </Modal>
   );
 };
@@ -363,7 +465,6 @@ const styles = StyleSheet.create({
     color: '#999',
     marginTop: 2,
   },
-  // Estilos do Modal de Contato
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',

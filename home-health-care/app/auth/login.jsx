@@ -1,11 +1,54 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, Platform } from 'react-native';
 
 import { CardAutenticacao } from '../../components/CardAutenticacao';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+
+  const handleLogin = async () => {
+    // 1. Isso aqui vai provar que o botão foi clicado
+    console.log("=== BOTÃO ENTRAR CLICADO ==="); 
+    console.log("Tentando logar com:", email);
+
+    try {
+      const resposta = await fetch('http://localhost:3000/login', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, senha })
+      });
+
+      const dados = await resposta.json();
+
+      if (resposta.ok) {
+        console.log("Sucesso:", dados.mensagem);
+        router.push('/(tabs)'); 
+      } else {
+        // 2. Força o alerta aparecer no Navegador do Computador
+        const mensagemErro = dados.erro || "Falha no login";
+        console.log("A API recusou:", mensagemErro);
+        
+        if (Platform.OS === 'web') {
+          window.alert("Erro de Login: " + mensagemErro);
+        } else {
+          Alert.alert("Erro", mensagemErro);
+        }
+      }
+    } catch (error) {
+      console.error("Erro fatal de conexão:", error);
+      const falhaServidor = "Servidor offline. Você esqueceu de rodar 'node server.js' no outro terminal?";
+      
+      if (Platform.OS === 'web') {
+        window.alert("Erro: " + falhaServidor);
+      } else {
+        Alert.alert("Erro", falhaServidor);
+      }
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -38,6 +81,8 @@ export default function LoginScreen() {
             keyboardType="email-address"
             placeholderTextColor="#aaa"
             autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
           />
         </View>
 
@@ -48,6 +93,8 @@ export default function LoginScreen() {
             placeholder="********"
             secureTextEntry
             placeholderTextColor="#aaa"
+            value={senha}
+            onChangeText={setSenha}
           />
         </View>
 
@@ -55,7 +102,7 @@ export default function LoginScreen() {
           <Text style={styles.link}>Esqueci a minha senha</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.botaoEntrar} onPress={() => router.push('/(tabs)')}>
+        <TouchableOpacity style={styles.botaoEntrar} onPress={handleLogin}>
           <Text style={styles.textoBotao}>Entrar</Text>
         </TouchableOpacity>
 

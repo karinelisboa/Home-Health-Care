@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,44 +8,79 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+// IMPORTAÇÃO CORRIGIDA: Adicionando o useFocusEffect
+import { useRouter, useFocusEffect } from 'expo-router';
 import Footer from '../../../components/Footer';
 
 const MyProfileScreen = () => {
   const router = useRouter();
 
+  // 1. ESTADO PARA GUARDAR OS DADOS DO MÉDICO
+  const [medico, setMedico] = useState({
+    nome: "Carregando...",
+    nascimento: "...",
+    crm: "...",
+    cpf: "...",
+    email: "..."
+  });
+
+  // 2. GATILHO CORRIGIDO: Roda toda vez que a tela ganha foco
+  useFocusEffect(
+    useCallback(() => {
+      const buscarPerfil = async () => {
+        try {
+          const resposta = await fetch('http://localhost:3000/perfil');
+          if (resposta.ok) {
+            const dados = await resposta.json();
+            setMedico(dados);
+          }
+        } catch (error) {
+          console.error("Erro ao carregar o perfil:", error);
+        }
+      };
+
+      buscarPerfil();
+    }, [])
+  );
+
+  // 3. Monta os dados para a tela dinamicamente
   const profileData = [
     { 
       id: 1, 
       icon: 'person',
       label: 'Nome completo', 
-      value: 'Gustavo Chagas Pereira',
+      value: medico.nome,
     },
     { 
       id: 2, 
       icon: 'calendar',
       label: 'Data de nascimento', 
-      value: '23/06/2003',
+      value: medico.nascimento || 'Não informado',
     },
     { 
       id: 3, 
       icon: 'medical',
-      label: 'CRM/RJ', 
-      value: 'CRM/RJ 123456',
+      label: 'CRM', 
+      value: medico.crm,
     },
     { 
       id: 4, 
       icon: 'call',
-      label: 'Telefone', 
-      value: '122.145.023-90',
+      label: 'CPF', 
+      value: medico.cpf || 'Não informado',
     },
     { 
       id: 5, 
       icon: 'mail',
       label: 'Email', 
-      value: 'gustavochagas@gmail.com',
+      value: medico.email,
     },
   ];
+
+  // Pega as duas primeiras letras do nome para o avatar (ex: João Silva -> JS)
+  const iniciais = medico.nome !== "Carregando..." && medico.nome
+    ? medico.nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+    : "";
 
   return (
     <SafeAreaView style={styles.container}>
@@ -69,7 +104,7 @@ const MyProfileScreen = () => {
           <View style={styles.photoContainer}>
             <View style={styles.photoPlaceholder}>
               <View style={styles.photoGradient}>
-                <Text style={styles.photoInitials}>GC</Text>
+                <Text style={styles.photoInitials}>{iniciais}</Text>
               </View>
             </View>
             <TouchableOpacity style={styles.editPhotoButton} activeOpacity={0.8}>
@@ -78,7 +113,7 @@ const MyProfileScreen = () => {
               </View>
             </TouchableOpacity>
           </View>
-          <Text style={styles.profileName}>Gustavo Chagas</Text>
+          <Text style={styles.profileName}>{medico.nome}</Text>
           <View style={styles.badge}>
             <Ionicons name="shield-checkmark" size={12} color="#00897B" />
             <Text style={styles.badgeText}>Verificado</Text>
@@ -115,7 +150,7 @@ const MyProfileScreen = () => {
         </TouchableOpacity>
 
         {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton} activeOpacity={0.7}>
+        <TouchableOpacity style={styles.logoutButton} activeOpacity={0.7} onPress={() => router.replace('/')}>
           <Ionicons name="log-out-outline" size={20} color="#DC2626" />
           <Text style={styles.logoutText}>Sair da Conta</Text>
         </TouchableOpacity>

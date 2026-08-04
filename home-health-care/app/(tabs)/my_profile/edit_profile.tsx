@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,23 +16,78 @@ import Footer from '../../../components/Footer';
 const EditProfileScreen = () => {
   const router = useRouter();
   
+  // 1. ESTADO INICIAL
   const [formData, setFormData] = useState({
-    fullName: 'Gustavo Chagas Pereira',
-    crm: 'CRM/RJ 123456',
-    birthDate: '23/06/2003',
-    cpf: '122.145.023-90',
-    email: 'gustavochagas@gmail.com',
-    phone: '(21) 98765-4321',
+    fullName: '',
+    crm: '',
+    birthDate: '',
+    cpf: '',
+    email: '',
+    phone: '',
   });
 
-  const handleSave = () => {
-    Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
-    router.back();
+  // 2. GATILHO PARA BUSCAR OS DADOS DO MÉDICO NA API AO ABRIR A TELA
+  useEffect(() => {
+    const buscarPerfilParaEdicao = async () => {
+      try {
+        const resposta = await fetch('http://localhost:3000/perfil');
+        if (resposta.ok) {
+          const dados = await resposta.json();
+          setFormData({
+            fullName: dados.nome || '',
+            crm: dados.crm || '',
+            birthDate: dados.nascimento || '',
+            cpf: dados.cpf || '',
+            email: dados.email || '',
+            phone: '(21) 90000-0000',
+          });
+        }
+      } catch (error) {
+        console.error("Erro ao carregar o perfil para edição:", error);
+      }
+    };
+
+    buscarPerfilParaEdicao();
+  }, []);
+
+  // 3. INTEGRAÇÃO DA FUNÇÃO DE SALVAR COM A API
+  const handleSave = async () => {
+    try {
+      const resposta = await fetch('http://localhost:3000/perfil/atualizar', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          crm: formData.crm,
+          birthDate: formData.birthDate,
+          cpf: formData.cpf,
+          email: formData.email
+        }),
+      });
+
+      if (resposta.ok) {
+        Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
+        router.back();
+      } else {
+        const dadosErro = await resposta.json();
+        Alert.alert('Erro', dadosErro.erro || 'Falha ao atualizar o perfil.');
+      }
+    } catch (error) {
+      console.error("Erro ao salvar perfil:", error);
+      Alert.alert('Erro de Conexão', 'Não foi possível conectar ao servidor.');
+    }
   };
 
   const handleCancel = () => {
     router.back();
   };
+
+  // Pega as iniciais do nome para o avatar da edição
+  const iniciais = formData.fullName 
+    ? formData.fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+    : "";
 
   return (
     <SafeAreaView style={styles.container}>
@@ -51,12 +106,12 @@ const EditProfileScreen = () => {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
-        {/* Profile Photo Section */}
+        {/* Profile Photo Section Dinâmica */}
         <View style={styles.photoSection}>
           <View style={styles.photoContainer}>
             <View style={styles.photoPlaceholder}>
               <View style={styles.photoGradient}>
-                <Text style={styles.photoInitials}>GC</Text>
+                <Text style={styles.photoInitials}>{iniciais}</Text>
               </View>
             </View>
             <TouchableOpacity style={styles.editPhotoButton} activeOpacity={0.8}>
@@ -111,7 +166,7 @@ const EditProfileScreen = () => {
                 onChangeText={(text) => setFormData({...formData, birthDate: text})}
                 placeholder="DD/MM/AAAA"
                 placeholderTextColor="#9CA3AF"
-                keyboardType="numeric"
+                keyboardType="default"
               />
             </View>
           </View>
@@ -198,7 +253,6 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  /* Header */
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -228,7 +282,6 @@ const styles = StyleSheet.create({
   placeholder: {
     width: 48,
   },
-  /* Photo Section */
   photoSection: {
     alignItems: 'center',
     paddingTop: 20,
@@ -283,7 +336,6 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontWeight: '500',
   },
-  /* Form Section */
   formContainer: {
     paddingHorizontal: 24,
     marginTop: 10,
@@ -319,7 +371,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     paddingVertical: 12,
   },
-  /* Buttons */
   buttonContainer: {
     paddingHorizontal: 24,
     marginTop: 16,

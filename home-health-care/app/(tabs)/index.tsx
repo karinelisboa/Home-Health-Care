@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Platform } from 'react-native';
 import Footer from '../../components/Footer';
 import AlertCard from '../../components/AlertCard';
 import PatientDetailModal from '../../components/PatientDetail';
@@ -16,57 +16,28 @@ interface Alert {
 export default function Home() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
+  
+  // 1. COMEÇAMOS COM UM ARRAY VAZIO
+  const [alerts, setAlerts] = useState<Alert[]>([]);
 
-  const alerts: Alert[] = [
-    {
-      date: "09/07/2025",
-      time: "13:44",
-      classification: "Sem classificação",
-      bpm: 56,
-      patient: "Karine Lisboa",
-      showIcon: false
-    },
-    {
-      date: "09/07/2025",
-      time: "13:44",
-      classification: "Sem classificação",
-      bpm: 57,
-      patient: "Raphael",
-      showIcon: true
-    },
-    {
-      date: "09/07/2025",
-      time: "13:44",
-      classification: "Sem classificação",
-      bpm: 58,
-      patient: "Maria Silva",
-      showIcon: false
-    },
-    {
-      date: "09/07/2025",
-      time: "14:12",
-      classification: "Sem classificação",
-      bpm: 62,
-      patient: "João Pedro",
-      showIcon: false
-    },
-    {
-      date: "09/07/2025",
-      time: "14:30",
-      classification: "Sem classificação",
-      bpm: 71,
-      patient: "Ana Paula",
-      showIcon: true
-    },
-    {
-      date: "09/07/2025",
-      time: "15:05",
-      classification: "Sem classificação",
-      bpm: 65,
-      patient: "Carlos Eduardo",
-      showIcon: false
-    }
-  ];
+  // 2. O GATILHO: BUSCA OS DADOS DA API QUANDO A TELA ABRE
+  useEffect(() => {
+    const buscarAlertas = async () => {
+      try {
+        // ATENÇÃO: Se for rodar no celular físico, troque 'localhost' pelo seu IP (ex: 192.168.1.X)
+        const resposta = await fetch('http://localhost:3000/alertas');
+        
+        if (resposta.ok) {
+          const dadosDaApi = await resposta.json();
+          setAlerts(dadosDaApi); // 3. PREENCHE A TELA COM OS DADOS DO BACKEND
+        }
+      } catch (error) {
+        console.error("Erro ao buscar alertas da API:", error);
+      }
+    };
+
+    buscarAlertas();
+  }, []);
 
   const handleAlertPress = (alert: Alert) => {
     setSelectedAlert(alert);
@@ -82,35 +53,41 @@ export default function Home() {
 
       {/* Conteúdo fixo - não rola */}
       <View style={styles.content}>
-        <Text style={styles.greeting}>Bom dia, Gustavo</Text>
+        <Text style={styles.greeting}>Bem-vindo, Doutor(a)</Text>
         <Text style={styles.subtitle}>
           Monitore os alertas sobre os sinais coletados dos pacientes
         </Text>
 
         <Text style={styles.sectionTitle}>Seus últimos alertas</Text>
         <Text style={styles.sectionSubtitle}>
-          Monitore os alertas sobre os sinais coletados dos pacientes
+          Listagem atualizada em tempo real via API
         </Text>
       </View>
 
-      {/* Lista de Alertas - Apenas esta parte rola */}
+      {/* Lista de Alertas Dinâmica */}
       <ScrollView 
         style={styles.alertsScrollView}
         contentContainerStyle={styles.alertsScrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {alerts.map((alert, index) => (
-          <AlertCard
-            key={index}
-            date={alert.date}
-            time={alert.time}
-            classification={alert.classification}
-            bpm={alert.bpm}
-            patient={alert.patient}
-            showIcon={alert.showIcon}
-            onPress={() => handleAlertPress(alert)}
-          />
-        ))}
+        {alerts.length === 0 ? (
+          <Text style={{ textAlign: 'center', marginTop: 20, color: '#666' }}>
+            Buscando alertas no servidor...
+          </Text>
+        ) : (
+          alerts.map((alert, index) => (
+            <AlertCard
+              key={index}
+              date={alert.date}
+              time={alert.time}
+              classification={alert.classification}
+              bpm={alert.bpm}
+              patient={alert.patient}
+              showIcon={alert.showIcon}
+              onPress={() => handleAlertPress(alert)}
+            />
+          ))
+        )}
       </ScrollView>
 
       {/* Footer - Fixo */}

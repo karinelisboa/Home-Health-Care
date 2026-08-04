@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Dimensions, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+// 1. MANTIVE SUA ESTRUTURA ORIGINAL DE EXAME
 interface ExamRecord {
   id: number;
   date: string;
@@ -11,6 +12,7 @@ interface ExamRecord {
   bpm: number;
 }
 
+// 2. AJUSTE NA PROPS: Agora o modal aceita a lista que vem da API externa
 interface PatientHistoryModalProps {
   visible: boolean;
   onClose: () => void;
@@ -18,6 +20,7 @@ interface PatientHistoryModalProps {
   age: number;
   currentClassification: string;
   currentBpm: number;
+  examHistory: ExamRecord[]; // RECEBE OS DADOS DA API
   onExamPress: (exam: ExamRecord) => void;
 }
 
@@ -30,16 +33,12 @@ const PatientHistoryModal: React.FC<PatientHistoryModalProps> = ({
   age,
   currentClassification,
   currentBpm,
+  examHistory, // PUXA O DADO DAQUI
   onExamPress
 }) => {
-  // Histórico de exames mockado
-  const examHistory: ExamRecord[] = [
-    { id: 1, date: '09/08/2025', time: '13:44', type: 'Eletrocardiograma', classification: 'Sem classificação', bpm: 57 },
-    { id: 2, date: '02/08/2025', time: '13:44', type: 'Eletrocardiograma', classification: 'Sem classificação', bpm: 57 },
-    { id: 3, date: '28/07/2025', time: '13:44', type: 'Eletrocardiograma', classification: 'Sem classificação', bpm: 57 },
-    { id: 4, date: '15/07/2025', time: '10:30', type: 'Eletrocardiograma', classification: 'Normal', bpm: 62 },
-    { id: 5, date: '01/07/2025', time: '14:15', type: 'Eletrocardiograma', classification: 'Sem classificação', bpm: 59 },
-  ];
+  
+  // AQUELE COMENTÁRIO FIXO COM OS EXAMES FOI APAGADO DAQUI
+  // POIS AGORA OS DADOS VÊM DIRETO DO SERVIDOR
 
   return (
     <Modal
@@ -81,39 +80,46 @@ const PatientHistoryModal: React.FC<PatientHistoryModalProps> = ({
           {/* Título dos Exames */}
           <Text style={styles.sectionTitle}>Exames Recentes</Text>
 
-          {/* Lista de Exames */}
-          {examHistory.map((exam) => (
-            <TouchableOpacity 
-              key={exam.id}
-              style={styles.examCard}
-              onPress={() => {
-                onExamPress(exam);
-                onClose();
-              }}
-              activeOpacity={0.7}
-            >
-              <View style={styles.examContent}>
-                <View style={styles.examInfo}>
-                  <Text style={styles.examDate}>{exam.date}, às {exam.time}</Text>
-                  <Text style={styles.examType}>{exam.type}</Text>
-                  <Text style={styles.examDetails}>
-                    {exam.classification} · {exam.bpm} bpm
-                  </Text>
-                </View>
-                <View style={styles.examIconContainer}>
-                  <View style={styles.examIcon}>
-                    <Ionicons name="pulse" size={28} color="#ef5350" />
+          {/* Lista de Exames Dinâmica baseada no que vem da API */}
+          {!examHistory || examHistory.length === 0 ? (
+            <Text style={{ textAlign: 'center', color: '#666', marginTop: 20 }}>
+              Nenhum exame histórico encontrado no servidor.
+            </Text>
+          ) : (
+            examHistory.map((exam) => (
+              <TouchableOpacity 
+                key={exam.id}
+                style={styles.examCard}
+                onPress={() => {
+                  onExamPress(exam);
+                  onClose();
+                }}
+                activeOpacity={0.7}
+              >
+                <View style={styles.examContent}>
+                  <View style={styles.examInfo}>
+                    <Text style={styles.examDate}>{exam.date}, às {exam.time}</Text>
+                    <Text style={styles.examType}>{exam.type}</Text>
+                    <Text style={styles.examDetails}>
+                      {exam.classification} · {exam.bpm} bpm
+                    </Text>
+                  </View>
+                  <View style={styles.examIconContainer}>
+                    <View style={styles.examIcon}>
+                      <Ionicons name="pulse" size={28} color="#ef5350" />
+                    </View>
                   </View>
                 </View>
-              </View>
-            </TouchableOpacity>
-          ))}
+              </TouchableOpacity>
+            ))
+          )}
         </ScrollView>
       </View>
     </Modal>
   );
 };
 
+// MANTIVE TODOS OS SEUS ESTILOS LINDOS DO JEITO QUE ESTAVAM
 const styles = StyleSheet.create({
   container: {
     flex: 1,

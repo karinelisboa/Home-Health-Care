@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,19 +11,40 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
+interface PatientItem {
+  id: number;
+  name: string;
+  info: string;
+}
+
 const PatientsListScreen = () => {
   const router = useRouter();
   const [searchText, setSearchText] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('Todos');
 
-  const patients = [
-    { id: 1, name: 'João Silva', info: 'Alguma informação' },
-    { id: 2, name: 'Maria Oliveira', info: 'Alguma informação' },
-    { id: 3, name: 'Carlos Mendes', info: 'Alguma informação' },
-    { id: 4, name: 'Maria de Fátima', info: 'Alguma informação' },
-    { id: 5, name: 'Afonso Roitman', info: 'Alguma informação' },
-    { id: 6, name: 'Odete Roitman', info: 'Alguma informação' },
-  ];
+  // Estado para armazenar os pacientes do médico que vierem da API
+  const [patients, setPatients] = useState<PatientItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Gatilho: Puxa a lista da API assim que a tela abre
+  useEffect(() => {
+    const buscarPacientes = async () => {
+      try {
+        // Se testar no celular físico, troque localhost pelo IP da sua máquina
+        const resposta = await fetch('http://localhost:3000/api/pacientes');
+        if (resposta.ok) {
+          const dados = await resposta.json();
+          setPatients(dados);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar a lista de pacientes:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    buscarPacientes();
+  }, []);
 
   const filteredPatients = patients.filter(patient =>
     patient.name.toLowerCase().includes(searchText.toLowerCase())
@@ -63,24 +84,34 @@ const PatientsListScreen = () => {
           <Text style={styles.filterText}>Todos</Text>
         </TouchableOpacity>
 
-        {/* Patients List */}
+        {/* Patients List Dinâmica */}
         <View style={styles.patientsList}>
-          {filteredPatients.map((patient, index) => (
-            <TouchableOpacity
-              key={patient.id}
-              style={[
-                styles.patientItem,
-                index !== filteredPatients.length - 1 && styles.patientItemBorder
-              ]}
-              activeOpacity={0.7}
-            >
-              <View style={styles.patientInfo}>
-                <Text style={styles.patientName}>{patient.name}</Text>
-                <Text style={styles.patientDetail}>{patient.info}</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#999" />
-            </TouchableOpacity>
-          ))}
+          {isLoading ? (
+            <Text style={{ textAlign: 'center', padding: 20, color: '#666' }}>
+              Carregando lista de pacientes...
+            </Text>
+          ) : filteredPatients.length === 0 ? (
+            <Text style={{ textAlign: 'center', padding: 20, color: '#666' }}>
+              Nenhum paciente cadastrado encontrado.
+            </Text>
+          ) : (
+            filteredPatients.map((patient, index) => (
+              <TouchableOpacity
+                key={patient.id}
+                style={[
+                  styles.patientItem,
+                  index !== filteredPatients.length - 1 && styles.patientItemBorder
+                ]}
+                activeOpacity={0.7}
+              >
+                <View style={styles.patientInfo}>
+                  <Text style={styles.patientName}>{patient.name}</Text>
+                  <Text style={styles.patientDetail}>{patient.info}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#999" />
+              </TouchableOpacity>
+            ))
+          )}
         </View>
 
         {/* Bottom Spacer */}

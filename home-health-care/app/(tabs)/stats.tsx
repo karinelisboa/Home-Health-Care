@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,30 +12,44 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import Footer from '../../components/Footer';
 
+interface AlertItem {
+  id: number;
+  name: string;
+  condition: string;
+  time: string;
+}
+
 const StatsScreen = () => {
   const router = useRouter();
   const [searchText, setSearchText] = useState('');
+  
+  // 1. ESTADOS PARA GUARDAR OS DADOS QUE VÊM DA API
+  const [cards, setCards] = useState({
+    pacientesTotais: 0,
+    urgentes: 0,
+    atencao: 0,
+    semClassificacao: 0
+  });
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
 
-  const alerts = [
-    {
-      id: 1,
-      name: 'João Silva',
-      condition: 'Arritmia detectada',
-      time: 'há 5 min',
-    },
-    {
-      id: 2,
-      name: 'Maria Oliveira',
-      condition: 'Taquicardia',
-      time: 'há 20 min',
-    },
-    {
-      id: 3,
-      name: 'Carlos Mendes',
-      condition: 'ECG irregular neo',
-      time: 'há 2h',
-    },
-  ];
+  // 2. O GATILHO: Dispara a busca na API toda vez que 'searchText' mudar (quando você digitar)
+  useEffect(() => {
+    const carregarDadosEstatisticos = async () => {
+      try {
+        // Se testar no celular físico, troque localhost pelo seu IP
+        const resposta = await fetch(`http://localhost:3000/api/estatisticas?busca=${searchText}`);
+        if (resposta.ok) {
+          const dados = await resposta.json();
+          setCards(dados.cards);
+          setAlerts(dados.alertasRecentes);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar dados estatísticos:", error);
+      }
+    };
+
+    carregarDadosEstatisticos();
+  }, [searchText]); // <-- Escuta a barra de pesquisa
 
   return (
     <SafeAreaView style={styles.container}>
@@ -61,9 +75,9 @@ const StatsScreen = () => {
           />
         </View>
 
-        {/* Stats Cards Grid */}
+        {/* Stats Cards Grid Dinâmico */}
         <View style={styles.statsGrid}>
-          {/* Total Patients - CLICÁVEL */}
+          {/* Total Patients */}
           <TouchableOpacity 
             style={[styles.card, styles.cardWhite]}
             onPress={() => router.push('/patients-list')}
@@ -71,27 +85,27 @@ const StatsScreen = () => {
           >
             <View style={styles.cardContent}>
               <Ionicons name="person" size={32} color="#4DB6AC" />
-              <Text style={styles.cardNumber}>120</Text>
+              <Text style={styles.cardNumber}>{cards.pacientesTotais}</Text>
             </View>
             <Text style={styles.cardLabel}>Pacientes totais</Text>
           </TouchableOpacity>
 
-          {/* Unread Notifications (Red) */}
+          {/* Unread Notifications (Urgentes) */}
           <View style={[styles.card, styles.cardRed]}>
             <View style={styles.cardContent}>
               <Ionicons name="alarm" size={32} color="#fff" />
-              <Text style={[styles.cardNumber, styles.textWhite]}>8</Text>
+              <Text style={[styles.cardNumber, styles.textWhite]}>{cards.urgentes}</Text>
             </View>
             <Text style={[styles.cardLabel, styles.textWhite]}>Notificações não vistas</Text>
           </View>
 
-          {/* Warning Notifications (Yellow) */}
+          {/* Warning Notifications (Atenção) */}
           <View style={[styles.card, styles.cardYellow]}>
             <View style={styles.cardContent}>
               <View style={styles.hexagonIcon}>
                 <Ionicons name="alert" size={24} color="#000" />
               </View>
-              <Text style={[styles.cardNumber, styles.textDark]}>3</Text>
+              <Text style={[styles.cardNumber, styles.textDark]}>{cards.atencao}</Text>
             </View>
             <Text style={[styles.cardLabel, styles.textDark]}>Notificações{'\n'}não vistas</Text>
           </View>
@@ -100,31 +114,37 @@ const StatsScreen = () => {
           <View style={[styles.card, styles.cardWhite]}>
             <View style={styles.cardContent}>
               <Ionicons name="search" size={32} color="#4DB6AC" />
-              <Text style={styles.cardNumber}>5</Text>
+              <Text style={styles.cardNumber}>{cards.semClassificacao}</Text>
             </View>
             <Text style={styles.cardLabel}>Sem classificação</Text>
           </View>
         </View>
 
-        {/* Recent Alerts Section */}
+        {/* Recent Alerts Section Dinâmica */}
         <View style={styles.alertsSection}>
           <Text style={styles.alertsTitle}>Alertas recentes</Text>
           
-          {alerts.map((alert, index) => (
-            <View 
-              key={alert.id} 
-              style={[
-                styles.alertItem,
-                index !== alerts.length - 1 && styles.alertItemBorder
-              ]}
-            >
-              <View style={styles.alertInfo}>
-                <Text style={styles.alertName}>{alert.name}</Text>
-                <Text style={styles.alertCondition}>{alert.condition}</Text>
+          {alerts.length === 0 ? (
+            <Text style={{ color: '#666', textAlign: 'center', marginVertical: 10 }}>
+              Nenhum alerta para esta busca.
+            </Text>
+          ) : (
+            alerts.map((alert, index) => (
+              <View 
+                key={alert.id} 
+                style={[
+                  styles.alertItem,
+                  index !== alerts.length - 1 && styles.alertItemBorder
+                ]}
+              >
+                <View style={styles.alertInfo}>
+                  <Text style={styles.alertName}>{alert.name}</Text>
+                  <Text style={styles.alertCondition}>{alert.condition}</Text>
+                </View>
+                <Text style={styles.alertTime}>{alert.time}</Text>
               </View>
-              <Text style={styles.alertTime}>{alert.time}</Text>
-            </View>
-          ))}
+            ))
+          )}
         </View>
 
         {/* Bottom Spacer */}
@@ -137,6 +157,7 @@ const StatsScreen = () => {
   );
 };
 
+// Mantive exatamente todos os seus estilos visuais intactos
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -145,7 +166,6 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  /* Header */
   header: {
     paddingTop: 16,
     paddingHorizontal: 24,
@@ -162,7 +182,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
   },
-  /* Search Bar */
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -181,7 +200,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1A1A1A',
   },
-  /* Stats Grid */
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -240,7 +258,6 @@ const styles = StyleSheet.create({
   textDark: {
     color: '#1A1A1A',
   },
-  /* Alerts Section */
   alertsSection: {
     backgroundColor: '#F5F5F5',
     marginHorizontal: 24,

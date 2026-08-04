@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import Footer from '../../components/Footer';
 
 export default function PatientDetail() {
@@ -42,7 +42,7 @@ export default function PatientDetail() {
         <View style={styles.actionsContainer}>
           <TouchableOpacity style={styles.actionButton}>
             <View style={styles.actionIconCircle}>
-              <Ionicons name="call" size={24} color="#00897B" />
+              <Ionicons name="call-outline" size={24} color="#00897B" />
             </View>
             <Text style={styles.actionText}>Contato</Text>
           </TouchableOpacity>
